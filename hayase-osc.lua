@@ -2048,6 +2048,8 @@ end
 local function osc_init()
     msg.debug("osc_init")
 
+    text_width_cache = {}  -- invalidate cache on init (resolution may change)
+
     setup_canvas()
     create_elements()
 
