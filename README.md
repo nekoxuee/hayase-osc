@@ -5,59 +5,33 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Samillion/ModernZ">
-    <img src="https://img.shields.io/badge/based_on-ModernZ-cba6f7?style=flat-square&labelColor=313244" alt="ModernZ">
-  </a>
-  <a href="https://github.com/hayase-app">
-    <img src="https://img.shields.io/badge/inspired_by-hayase.watch-b4befe?style=flat-square&labelColor=313244" alt="Hayase">
-  </a>
-</p>
-
-<p align="center">
-  <img src="https://i.imgur.com/7COFhYY.png" width="85%">
+  <img src="https://github.com/user-attachments/assets/669f6024-d3c9-419b-8fbc-045634da4a3e" width="85%">
 </p>
 
 ## Overview
 
-This is a personal fork of **ModernZ** (which, like this script, stems from mpv's original [`osc.lua`](https://github.com/mpv-player/mpv/blob/master/player/lua/osc.lua)). I wanted the [hayase.watch](https://hayase.watch) player experience in my local mpv setup, so I rewrote the interface using **Lucide** icons and a more refined, minimal layout.
+This is a personal fork of [osc.lua](https://github.com/mpv-player/mpv/blob/master/player/lua/osc.lua), and a sibling to **ModernZ**, sharing much of its core logic and features. I wanted the [hayase.watch](https://hayase.watch) player experience in my local mpv setup, so I rewrote the interface using Lucide icons and a more refined, minimal layout.
 
-&nbsp; ✦ &nbsp; **Visuals** - a minimal, hayase-inspired layout with web-style hover states and consistent visual feedback.  
+&nbsp; ✦ &nbsp; **Visuals** - hayase inspired layout with web style hover states and consistent visual feedback.  
 &nbsp; ✦ &nbsp; **Interactive menus** - mpv’s built-in menus for tracks, chapters, playlists, etc.  
 &nbsp; ✦ &nbsp; **Lucide icons** - Lucide icon set used throughout.  
-&nbsp; ✦ &nbsp; **Thumbnail previews** - optional preview support via [_thumbfast_](https://github.com/po5/thumbfast).
+&nbsp; ✦ &nbsp; **Thumbnail previews** - optional progress bar previews via [_thumbfast_](https://github.com/po5/thumbfast).
 
 ## Installation
 
-### Requirements
+**Requirements:**
 
 - **[mpv](https://mpv.io/installation/)** (v0.39.0 or above)
 - **[thumbfast](https://github.com/po5/thumbfast)** (_Optional_: for hover thumbnails)
 
-### Files Setup
+Place your files in the mpv configuration folder. On **Windows**, use `%APPDATA%/mpv/`. On **Linux** or **macOS**, use `~/.config/mpv/`. If these folders don't exist yet, create the _mpv_ folder manually and add _scripts_ and _fonts_ subfolders inside it. You also need an **mpv.conf** file with the following:
 
-Place the files into your mpv config folder and update your config:
-
-1. Copy [`hayase-osc.lua`](/scripts/hayase-osc.lua) to `scripts/`
-2. Copy [`Lucide.ttf`](/fonts/Lucide.ttf) to `fonts/`
-3. Create `mpv.conf` and add:
-
-```ini
+```
 osc=no
 title-bar=no # Optional: for the frameless look
 ```
 
-> [!IMPORTANT]
-> First time using mpv? Create the **mpv** folder, then add **scripts/** and **fonts/** inside it.
-
-### Config location
-
-```
-Windows -  %APPDATA%/mpv/
-Linux   -  ~/.config/mpv/
-macOS   -  ~/Library/Application Support/mpv/
-```
-
-### Folder layout
+Copy [hayase-osc.lua](scripts/hayase-osc.lua) into the scripts folder and [Lucide.ttf](fonts/Lucide.ttf) into the fonts folder. Your file structure should look like this:
 
 ```
 mpv/
@@ -70,19 +44,20 @@ mpv/
 
 ## Acknowledgments
 
-- **[ModernZ](https://github.com/Samillion/ModernZ)** - For the foundation this script was built upon.
-- **[mpv contributors](https://github.com/mpv-player/mpv/graphs/contributors)** - For the original [`osc.lua`](https://github.com/mpv-player/mpv/blob/master/player/lua/osc.lua) script.
-- **[ThaUnknown](https://github.com/ThaUnknown)** - For the UI/UX inspiration.
-- **[Lucide](https://github.com/lucide-icons/lucide)** - For the icon set.
+- **[mpv contributors](https://github.com/mpv-player/mpv/graphs/contributors)** - The base [osc.lua](https://github.com/mpv-player/mpv/blob/master/player/lua/osc.lua) script, which serves as the primary upstream.
+- **[ModernZ](https://github.com/Samillion/ModernZ)** - Sibling project with shared features and logic.
+- **[uosc](https://github.com/tomasklaen/uosc)** - Architectural and logic inspiration.
+- **[ThaUnknown](https://github.com/ThaUnknown)** - UI/UX inspiration.
+- **[Lucide](https://github.com/lucide-icons/lucide)** - Icon set.
 
 ## License
 
 This project is licensed under the **GNU Lesser General Public License v2.1 (LGPL-2.1)**.  
-This project is a derivative of **ModernZ** and mpv's **osc.lua** and is distributed under the same terms. See the [LICENSE](LICENSE) file for details.
+This project is a derivative of mpv's **osc.lua** and is distributed under the same terms. See the [LICENSE](LICENSE) file for details.
 
 <br>
 
 <p align="center">
-<i>"Yet another modern osc fork"</i><br>
+<i>"Look, an emoji!"</i><br>
 🌸
 </p>
