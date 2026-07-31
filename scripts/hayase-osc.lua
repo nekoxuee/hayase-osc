@@ -776,6 +776,20 @@ local function draw_rect(ass, x1, y1, x2, y2, r_left, r_right, r)
     end
 end
 
+-- Redraw the segmented seekbar background
+local function update_seekbarbg(element)
+    local elem_geo = element.layout.geometry
+    local static_ass = assdraw.ass_new()
+    static_ass:draw_start()
+    local segments = get_seekbar_segments(elem_geo.w)
+    local r = element.layout.box.radius
+    for i, seg in ipairs(segments) do
+        draw_rect(static_ass, seg.x, 0, seg.x + seg.w, elem_geo.h, (i == 1), (i == #segments), r)
+    end
+    static_ass:draw_stop()
+    element.static_ass = static_ass
+end
+
 local function prepare_elements()
     -- remove elements without layout or invisible
     local elements2 = {}
@@ -825,21 +839,19 @@ local function prepare_elements()
         local static_ass = assdraw.ass_new()
 
         if element.type == "box" then
-            --draw box
-            static_ass:draw_start()
             if element.name == "seekbarbg" then
-                local segments = get_seekbar_segments(elem_geo.w)
-                local r = element.layout.box.radius
-                for i, seg in ipairs(segments) do
-                    draw_rect(static_ass, seg.x, 0, seg.x + seg.w, elem_geo.h, (i == 1), (i == #segments), r)
-                end
-            elseif element.layout.box.hexagon then
-                static_ass:hexagon_cw(0, 0, elem_geo.w, elem_geo.h, element.layout.box.radius, 0)
+                update_seekbarbg(element)
             else
-                static_ass:round_rect_cw(0, 0, elem_geo.w, elem_geo.h, element.layout.box.radius)
+                --draw box
+                static_ass:draw_start()
+                if element.layout.box.hexagon then
+                    static_ass:hexagon_cw(0, 0, elem_geo.w, elem_geo.h, element.layout.box.radius, 0)
+                else
+                    static_ass:round_rect_cw(0, 0, elem_geo.w, elem_geo.h, element.layout.box.radius)
+                end
+                static_ass:draw_stop()
+                element.static_ass = static_ass
             end
-            static_ass:draw_stop()
-            element.static_ass = static_ass
 
         elseif element.type == "slider" then
             update_slider(element)
@@ -1940,6 +1952,7 @@ local function create_elements()
     --seekbar
     ne = new_element("seekbar", "slider")
     ne.enabled = mp.get_property("percent-pos") ~= nil
+    state.slider_element = ne.enabled and ne or nil
     local seekbar_el = ne
     ne.slider.pos_f = function ()
         if state.eof_reached then return 100 end
@@ -2091,6 +2104,7 @@ local function osc_init()
     end
 
     state.persistent_seekbar_element = elements["persistent_seekbar"]
+    state.seekbarbg_element = elements["seekbarbg"]
 
     prepare_elements()
     update_margins()
@@ -2544,6 +2558,7 @@ observe_cached("duration", function ()
         request_init()
     elseif state.chapter_list[1] and state.slider_element then
         update_slider(state.slider_element)
+        update_seekbarbg(state.seekbarbg_element)
         request_tick()
     end
 end)
