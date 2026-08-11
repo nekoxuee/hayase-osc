@@ -378,35 +378,32 @@ local function scale_value(x0, x1, y0, y1, val)
     return (m * val) + b
 end
 
-local tooltip_osd = mp.create_osd_overlay and mp.create_osd_overlay("ass-events") or nil
-if tooltip_osd then
-    tooltip_osd.hidden = true
-    tooltip_osd.compute_bounds = true
+local text_width_osd = mp.create_osd_overlay and mp.create_osd_overlay("ass-events") or nil
+if text_width_osd then
+    text_width_osd.hidden = true
+    text_width_osd.compute_bounds = true
 end
 
 local text_width_cache = {}
 
-local function estimate_text_width(text, style)
+local function get_text_width(text, style)
     if text == nil then return 0 end
     text = tostring(text)
     if #text == 0 then return 0 end
 
-    -- Replace digits with '0' to ensure width is perfectly stable during playback
-    local measure_text = text:gsub("%d", "0")
-    local cache_key = measure_text .. (style or "")
+    local normalized_text = text:gsub("%d", "0")
+    local cache_key = (style or "") .. "\31" .. normalized_text
 
-    if text_width_cache[cache_key] then
-        return text_width_cache[cache_key]
-    end
+    local cached_width = text_width_cache[cache_key]
+    if cached_width then return cached_width end
 
     local width = 0
+    if text_width_osd and text_width_osd.update then
+        text_width_osd.res_x = osc_param.playresx
+        text_width_osd.res_y = osc_param.playresy
+        text_width_osd.data = (style or "") .. normalized_text
 
-    if tooltip_osd and tooltip_osd.update then
-        tooltip_osd.res_x = osc_param.playresx
-        tooltip_osd.res_y = osc_param.playresy
-        tooltip_osd.data = (style or "") .. measure_text
-
-        local bounds = tooltip_osd:update()
+        local bounds = text_width_osd:update()
         if bounds and bounds.x1 and bounds.x0 then
             width = bounds.x1 - bounds.x0
         end
@@ -816,7 +813,7 @@ local function prepare_elements()
         -- calculate title and chapter hitbox
         local hitbox_w = elem_geo.w
         if (element.name == "title" or element.name == "chapter_title") and type(element.content) == "function" then
-            local text_w = estimate_text_width(element.content(), osc_styles[element.name])
+            local text_w = get_text_width(element.content(), osc_styles[element.name])
 
             if text_w > 0 then hitbox_w = math.min(text_w, elem_geo.w) end
         end
@@ -1115,7 +1112,7 @@ local function render_elements(master_ass)
                         local tx = get_virt_mouse_pos()
                         local r_w, r_h = get_virt_scale_factor()
 
-                        local tooltip_width = estimate_text_width(tooltiplabel, slider_lo.tooltip_style)
+                        local tooltip_width = get_text_width(tooltiplabel, slider_lo.tooltip_style)
 
                         local chapter_text = nil
                         local chapter_width = 0
@@ -1126,7 +1123,7 @@ local function render_elements(master_ass)
                                     local ch = get_chapter(slider_pos * state.duration / 100)
                                     if ch and ch.title and ch.title ~= "" then
                                         chapter_text = ch.title
-                                        chapter_width = estimate_text_width(chapter_text, slider_lo.tooltip_style)
+                                        chapter_width = get_text_width(chapter_text, slider_lo.tooltip_style)
                                     end
                                 end
                             end
@@ -1267,7 +1264,7 @@ local function render_elements(master_ass)
 
                     local r_w = get_virt_scale_factor()
                     if state.osd_dimensions.w and r_w > 0 then
-                        local tooltip_width = estimate_text_width(tooltiplabel, element.tooltip_style)
+                        local tooltip_width = get_text_width(tooltiplabel, element.tooltip_style)
                         local margin = 10 * r_w
                         local half_width = tooltip_width / 2
 
@@ -2528,6 +2525,7 @@ end
 mp.register_event("file-loaded", function()
     state.file_loaded = true
     state.no_video = mp.get_property_native("current-tracks/video") == nil
+    text_width_cache = {}
     request_tick()
 
     if user_opts.osc_on_start then
