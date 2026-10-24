@@ -1051,9 +1051,9 @@ local function render_elements(master_ass)
                 element.eventresponder["mbtn_left_down"] ~= nil or
                 element.eventresponder["mbtn_left_up"] ~= nil
             )
-            if mouse_hit(element) and is_clickable and element.enabled then
+            if element.enabled and is_clickable and mouse_hit(element) then
                 local hx1, hy1, hx2, hy2 = get_element_hitbox(element)
-                local is_held = state.active_element == n and mouse_hit(element)
+                local is_held = state.active_element == n
 
                 elem_ass:append("{}")
                 elem_ass:new_event()
@@ -1070,12 +1070,11 @@ local function render_elements(master_ass)
                 ass_append_alpha(elem_ass, {[1] = element.hover_alpha or 0xCC, [2] = 255, [3] = 255, [4] = 255}, element.layout.alpha[1])
                 elem_ass:append(bg_color)
 
-                local pad = element.hover_pad or (element.is_wc and 0 or 12)
                 local hover_radius = element.hover_radius or (element.is_wc and 0 or 6)
                 local shrink = (is_held and not element.is_wc) and 0.5 or 0
 
                 elem_ass:draw_start()
-                elem_ass:round_rect_cw(hx1 - pad + shrink, hy1 - pad + shrink, hx2 + pad - shrink, hy2 + pad - shrink, hover_radius)
+                elem_ass:round_rect_cw(hx1 + shrink, hy1 + shrink, hx2 - shrink, hy2 - shrink, hover_radius)
                 elem_ass:draw_stop()
             end
         end
@@ -1251,14 +1250,12 @@ local function render_elements(master_ass)
                         tooltiplabel = element.nothingavailable
                     end
 
-                    local pad = element.hover_pad or (element.is_wc and 0 or 12)
-
                     local an = 2
-                    local ty = element.hitbox.y1 - pad
+                    local ty = element.hitbox.y1
                     local tx = (element.hitbox.x1 + element.hitbox.x2) / 2
 
                     if ty < osc_param.playresy / 2 then
-                        ty = element.hitbox.y2 + pad
+                        ty = element.hitbox.y2
                         an = 8
                     end
 
@@ -1376,7 +1373,8 @@ local function window_titlebar()
         h = 30,
     }
 
-    local controls_w = 150
+    local WC_BUTTON_W, WC_BUTTON_H = 48, 30
+    local controls_w = 3 * WC_BUTTON_W
     local controls_x = geo.w - controls_w
 
     local title_x = geo.x + 15
@@ -1387,17 +1385,17 @@ local function window_titlebar()
 
     -- Minimize: 🗕
     layout = add_layout("minimize")
-    layout.geometry = { x = controls_x + 25, y = button_y, an = 5, w = 50, h = geo.h }
+    layout.geometry = { x = controls_x + WC_BUTTON_W / 2, y = button_y, an = 5, w = WC_BUTTON_W, h = WC_BUTTON_H }
     layout.style = osc_styles.window_control
 
     -- Maximize: 🗖 / 🗗
     layout = add_layout("maximize")
-    layout.geometry = { x = controls_x + 75, y = button_y, an = 5, w = 50, h = geo.h }
+    layout.geometry = { x = controls_x + WC_BUTTON_W * 1.5, y = button_y, an = 5, w = WC_BUTTON_W, h = WC_BUTTON_H }
     layout.style = osc_styles.window_control
 
     -- Close: 🗙
     layout = add_layout("close")
-    layout.geometry = { x = controls_x + 125, y = button_y, an = 5, w = 50, h = geo.h }
+    layout.geometry = { x = controls_x + WC_BUTTON_W * 2.5, y = button_y, an = 5, w = WC_BUTTON_W, h = WC_BUTTON_H }
     layout.style = osc_styles.window_control
 
     add_area("window-controls", get_hitbox_coords(controls_x, geo.y, geo.an, controls_w, geo.h))
@@ -1524,31 +1522,35 @@ local function layout_default()
     lo.geometry = {x = osc_geo.w - 25, y = ref_y - 108, an = 6, w = time_codes_width, h = FONT_SIZE_MD}
     lo.style = osc_styles.time
 
+    -- Button geometry is the full interactive area; glyphs are centered inside.
+    local BUTTON_SIZE = 48
+    local BUTTON_SPACING = 55
+
     -- Left side buttons
     local start_x = 50
 
     lo = add_layout("play_pause")
-    lo.geometry = {x = start_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+    lo.geometry = {x = start_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
     lo.style = osc_styles.buttons
-    start_x = start_x + 55
+    start_x = start_x + BUTTON_SPACING
 
     if elements.playlist_prev.visible then
         lo = add_layout("playlist_prev")
-        lo.geometry = {x = start_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+        lo.geometry = {x = start_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
         lo.style = osc_styles.buttons
-        start_x = start_x + 55
+        start_x = start_x + BUTTON_SPACING
     end
 
     if elements.playlist_next.visible then
         lo = add_layout("playlist_next")
-        lo.geometry = {x = start_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+        lo.geometry = {x = start_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
         lo.style = osc_styles.buttons
-        start_x = start_x + 55
+        start_x = start_x + BUTTON_SPACING
     end
 
     if state.audio_track_count > 0 then
         lo = add_layout("vol_ctrl")
-        lo.geometry = {x = start_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+        lo.geometry = {x = start_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
         lo.style = osc_styles.buttons
         start_x = start_x + 28
 
@@ -1578,43 +1580,42 @@ local function layout_default()
     local end_x = osc_geo.w - 50
 
     lo = add_layout("fullscreen")
-    lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+    lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
     lo.style = osc_styles.buttons
-    end_x = end_x - 55
+    end_x = end_x - BUTTON_SPACING
 
     elements.pip.visible = osc_geo.w >= 500
     if elements.pip.visible then
         lo = add_layout("pip")
-        lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+        lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
         lo.style = osc_styles.buttons
-        end_x = end_x - 55
+        end_x = end_x - BUTTON_SPACING
     end
 
     elements.audio_track.visible = user_opts.audio_button and state.audio_track_count > 1 and osc_geo.w >= 750
     if elements.audio_track.visible then
         lo = add_layout("audio_track")
-        lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+        lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
         lo.style = osc_styles.buttons
-        end_x = end_x - 55
+        end_x = end_x - BUTTON_SPACING
     end
 
     elements.sub_track.visible = osc_geo.w >= 600
     if elements.sub_track.visible then
         lo = add_layout("sub_track")
-        lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+        lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
         lo.style = osc_styles.buttons
-        end_x = end_x - 55
+        end_x = end_x - BUTTON_SPACING
     end
 
     lo = add_layout("menu")
-    lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = 24, h = 24}
+    lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = BUTTON_SIZE, h = BUTTON_SIZE}
     lo.style = osc_styles.buttons
-    end_x = end_x - 55
+    end_x = end_x - BUTTON_SPACING
 
     lo = add_layout("speed")
     lo.geometry = {x = end_x, y = ref_y - 38, an = 5, w = 24, h = 24}
     lo.style = osc_styles.buttons
-    end_x = end_x - 55
 end
 
 
@@ -2192,20 +2193,24 @@ local function process_event(source, what)
     if what == "down" or what == "press" then
         reset_timeout() -- clicking resets the hideosc timer
 
-        for n = 1, #elements do
-            if mouse_hit(elements[n]) and
-                elements[n].eventresponder and
-                (elements[n].eventresponder[source .. "_up"] or
-                    elements[n].eventresponder[action]) then
+        -- Elements are sorted by layer, so the first hit from the top wins and
+        -- down/up always address the same element.
+        for n = #elements, 1, -1 do
+            local element = elements[n]
+            if mouse_hit(element) and
+                element.eventresponder and
+                (element.eventresponder[source .. "_up"] or
+                    element.eventresponder[action]) then
 
                 if what == "down" then
                     state.active_element = n
                     state.active_event_source = source
                 end
                 -- fire the down or press event if the element has one
-                if element_has_action(elements[n], action) then
-                    elements[n].eventresponder[action](elements[n])
+                if element_has_action(element, action) then
+                    element.eventresponder[action](element)
                 end
+                break
             end
         end
     elseif what == "up" then
